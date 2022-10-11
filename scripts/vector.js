@@ -165,11 +165,13 @@ There's two errors here!
     let cp = Math.cos(phi);
     let sp = Math.sin(phi);
 
-    let rx = [this.x,this.y*cp-this.z*sp,this.y*sp+this.z*cp];
-    let ry = [rx[0]*ct+rx[2]*st,rx[1],rx[2]*ct-rx[0]*st];
-    this.x = ry[0];
-    this.y = ry[1];
-    this.z = ry[2];
+    let x1 = this.x;
+    let y1 = this.y*cp-this.z*sp;
+    let z1 = this.y*sp+this.z*cp;
+
+    this.x = x1*ct + z1*st;
+    this.y = y1;
+    this.z = z1*ct - x1*st;
 
     /*
     let m = [[ct,0,-st],[st*sp,cp,ct*sp],[st*cp,-sp,ct*cp]];

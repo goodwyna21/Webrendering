@@ -49,8 +49,9 @@ class Renderer{
         dv = Vector.fromAngles(this.rotation[0] + this.fov*px/this.w - this.fov/2,
                                this.rotation[1] + this.fov*py/this.h - this.fov/2);
 
+
         if(px == Math.floor(this.h/2) && py == Math.floor(this.w/2)){
-            console.log(px,py,v,dv);
+            console.log("dv:",dv.x,dv.y,dv.z);
         }
 
         let mind = TOLERANCE + 1;
