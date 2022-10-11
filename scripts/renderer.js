@@ -1,12 +1,12 @@
 class Renderer{
-  constructor(_canvas,_scene=[],_bkgnd=[220,221,222],_cam=null,_theta=[0,0],_fov=Math.PI/2){
+  constructor(_canvas,_scene=[],_bkgnd=[220,221,222],_cam=null,_rotation=[0,0],_fov=Math.PI/4){
     this.scene = _scene;
     this.bkgnd = _bkgnd;
     if(_cam === null){
-      _cam = new Vector(0,0,-200);
+      _cam = new Vector(0,0,-300);
     }
     this.cam = _cam;
-    this.theta = _theta;
+    this.setCamera(_rotation[0],_rotation[1]);
     this.fov = _fov;
 
     this.canvas = _canvas;
@@ -16,7 +16,16 @@ class Renderer{
     this.img = this.ctx.createImageData(this.w,this.h);
     for(let i = 0; i < this.w*this.h; i++){
       this.img.data[4*i+3] = 255;
+
     }
+  }
+
+  setCamera(theta,phi,p=null){
+    if(p!=null){
+      this.cam = p.copy();
+    }
+    this.cam = Vector.fromAngles(theta,phi,-300);
+    this.rotation = [theta,phi];
   }
 
   addObject(obj){
@@ -25,25 +34,27 @@ class Renderer{
 
   render(canvas){
     let ind = 0;
-    let dv = new Vector(0,0,1);
-    let dvu = new Vector(0,0,0);
-    let v = new Vector(0,0,0);
+    let dv = new Vector();
+    let v = new Vector();
     let collided = null;
     let c = [0,0,0];
+
     for(let py = 0; py < this.h; py++){
-      dv.setY(1-2*(py/this.h));
+
+      //dv.setY(1-2*(py/this.h));
       for(let px = 0; px < this.w; px++){
-        dv.setX(-1+2*(px/this.w));
-        dvu = Vector.normalize(dv);
-        v.set(this.cam.x,this.cam.y,this.cam.z);
+        //dv.setX(-1+2*(px/this.w));
+
+        v = this.cam.copy();
+        dv = Vector.fromAngles(this.rotation[0] + this.fov*px/this.w - this.fov/2,
+                               this.rotation[1] + this.fov*py/this.h - this.fov/2);
+
+        if(px == Math.floor(this.h/2) && py == Math.floor(this.w/2)){
+            console.log(px,py,v,dv);
+        }
 
         let mind = TOLERANCE + 1;
-        let cnt = 0;
         while(mind > TOLERANCE){
-          cnt++;
-          if(cnt > 100){
-            break;
-          }
           if(v.getMagSq() > SKYBOXSQ){
             collided = null;
             break;
@@ -58,7 +69,7 @@ class Renderer{
             }
           }
 
-          v.add(Vector.mult(dvu,mind));
+          v.add(Vector.mult(dv,mind));
         }
 
         if(collided === null){
@@ -80,13 +91,3 @@ class Renderer{
     this.ctx.putImageData(this.img,0,0);
   }
 }
-
-let R = new Renderer(document.getElementById("renderCanvas"));
-function main(){
-  R.addObject(new Box(new Vector(0,0,0), new Vector(75,50,30), [Math.PI/3,Math.PI/7]));
-  R.addObject(new Sphere(new Vector(0,0,0),50));
-  R.addObject(new Sphere(new Vector(40,0,-20),25));
-  R.addObject(new Sphere(new Vector(-60,0,60),50));
-  R.render();
-}
-main();

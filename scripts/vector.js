@@ -19,6 +19,10 @@ class Vector{
     return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2 + (a.z-b.z)**2);
   }
 
+  static fromAngles(theta,phi,r=1){
+    return (new Vector(0,0,r)).rotate(theta,phi);
+  }
+
   static distSq(a,b){
     return (a.x-b.x)**2 + (a.y-b.y)**2 + (a.z-b.z)**2;
   }
@@ -28,7 +32,7 @@ class Vector{
     return new Vector(v.x/m,v.y/m,v.z/m);
   }
 
-  constructor(_x,_y,_z=0){
+  constructor(_x=0,_y=0,_z=0){
     this.x = _x;
     this.y = _y;
     this.z = _z;
@@ -151,15 +155,33 @@ class Vector{
   }
 
   rotate(theta,phi){
-    let x1 = this.x*Math.cos(theta) + this.z*Math.sin(theta);
-    let z1 = -this.x*Math.sin(theta) + this.z*Math.cos(theta);
-    this.x = x1;
-    this.z = z1;
+/*
+There's two errors here!
+-> stuff gets distorted when you rotate about the x axis
+-> some angles just dont fucking work for some reason
+*/
+    let ct = Math.cos(theta);
+    let st = Math.sin(theta);
+    let cp = Math.cos(phi);
+    let sp = Math.sin(phi);
 
-    x1 = this.x*Math.cos(phi) - this.y*Math.sin(phi);
-    let y1 = this.x*Math.sin(phi) + this.y*Math.cos(phi);
-    this.x = x1;
-    this.y = y1;
+    let rx = [this.x,this.y*cp-this.z*sp,this.y*sp+this.z*cp];
+    let ry = [rx[0]*ct+rx[2]*st,rx[1],rx[2]*ct-rx[0]*st];
+    this.x = ry[0];
+    this.y = ry[1];
+    this.z = ry[2];
+
+    /*
+    let m = [[ct,0,-st],[st*sp,cp,ct*sp],[st*cp,-sp,ct*cp]];
+    let newx = m[0][0]*this.x + m[1][0]*this.y + m[2][0]*this.z;
+    let newy = m[0][1]*this.x + m[1][1]*this.y + m[2][1]*this.z;
+    let newz = m[0][2]*this.x + m[1][2]*this.y + m[2][2]*this.z;
+    this.x = newx;
+    this.y = newy;
+    this.z = newz;
+    */
+    this.heading = null;
+    return this;
   }
 
   dist(v){
